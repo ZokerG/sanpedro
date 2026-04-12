@@ -10,6 +10,5 @@ public interface EventoUseCase {
     EventoResponseDTO actualizarEvento(Long id, EventoRequestDTO requestDTO);
     EventoResponseDTO obtenerEvento(Long id);
     List<EventoResponseDTO> obtenerTodos();
-    List<EventoResponseDTO> obtenerPorFestival(Long festivalId);
     void eliminarEvento(Long id);
 }

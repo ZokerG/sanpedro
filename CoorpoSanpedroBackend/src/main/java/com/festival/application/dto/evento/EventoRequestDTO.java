@@ -11,8 +11,6 @@ import java.time.LocalDateTime;
 
 @Data
 public class EventoRequestDTO {
-    @NotNull(message = "El ID del festival es obligatorio")
-    private Long festivalId;
 
     @NotBlank(message = "El nombre del evento es obligatorio")
     private String nombre;
@@ -22,10 +20,13 @@ public class EventoRequestDTO {
     @NotNull(message = "La fecha de inicio es obligatoria")
     private LocalDateTime fechaInicio;
 
-    private LocalDateTime fechaFin;
+    /**
+     * Duración del evento en horas. El backend calcula fechaFin automáticamente.
+     * Si no se proporciona o es <= 0, el evento no tiene fecha de fin.
+     */
+    private Integer duracionHoras;
 
     private BigDecimal presupuestoAprobado;
-
     private BigDecimal presupuestoEjecutado;
 
     @NotNull(message = "El estado del evento es obligatorio")
@@ -33,4 +34,9 @@ public class EventoRequestDTO {
 
     @NotNull(message = "La prioridad del evento es obligatoria")
     private Prioridad prioridad;
+
+    // Control logístico
+    private String ubicacionLogistica;
+    private Integer limitePersonal;
+    private BigDecimal cuotaPago;
 }

@@ -10,14 +10,19 @@ import java.time.LocalDateTime;
 @Data
 public class EventoResponseDTO {
     private Long id;
-    private Long festivalId;
-    private String festivalNombre;
     private String nombre;
     private String descripcion;
     private LocalDateTime fechaInicio;
     private LocalDateTime fechaFin;
+    private Integer duracionHoras;
     private BigDecimal presupuestoAprobado;
     private BigDecimal presupuestoEjecutado;
     private EstadoEvento estado;
     private Prioridad prioridad;
+
+    // Control logístico
+    private String ubicacionLogistica;
+    private Integer limitePersonal;
+    private BigDecimal cuotaPago;
+    private long totalAsignados;
 }

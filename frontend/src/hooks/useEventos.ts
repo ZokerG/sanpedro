@@ -1,6 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { eventoService } from '@/api/eventoService';
+import { asignacionService } from '@/api/asignacionService';
 import { Evento, CreateEventoDTO } from '@/models/evento';
+import { LiquidacionEvento } from '@/models/asignacion';
 import { toast } from 'sonner';
 
 export const useEventos = () => {
@@ -45,5 +47,19 @@ export const useDeleteEvento = () => {
     onError: () => {
       toast.error('Error al eliminar el evento');
     },
+  });
+};
+
+/** Query hook to get liquidation data for multiple events */
+export const useLiquidaciones = (eventoIds: number[]) => {
+  return useQuery<LiquidacionEvento[]>({
+    queryKey: ['liquidaciones', eventoIds],
+    queryFn: async () => {
+      const results = await Promise.all(
+        eventoIds.map((id) => asignacionService.obtenerLiquidacion(id))
+      );
+      return results;
+    },
+    enabled: eventoIds.length > 0,
   });
 };

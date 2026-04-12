@@ -2,17 +2,25 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, CalendarDays, WalletCards, ListTodo, TentTree, ArrowLeftRight, Users } from 'lucide-react';
-import { cn } from '@/lib/utils'; // if lib/utils exist, wait, I haven't created it yet. I will create it.
+import {
+  LayoutDashboard,
+  CalendarDays,
+  WalletCards,
+  ListTodo,
+  TentTree,
+  ArrowLeftRight,
+  Users,
+  Settings,
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const menuItems = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
-  { name: 'Festivales (M1)', href: '/festivales', icon: TentTree },
-  { name: 'Eventos (M1)', href: '/eventos', icon: CalendarDays },
-  { name: 'Presupuesto (M2)', href: '/presupuesto', icon: WalletCards },
-  { name: 'Traslados (M2)', href: '/traslados', icon: ArrowLeftRight },
-  { name: 'Tareas (M3)', href: '/tareas', icon: ListTodo },
-  { name: 'Logística (M4)', href: '/logistica', icon: Users },
+  { name: 'Logística', href: '/logistica', icon: Users },
+  { name: 'Administrativo', href: '/administrativo', icon: Users },
+  { name: 'Prensa', href: '/prensa', icon: Users },
+  { name: 'Eventos', href: '/eventos', icon: CalendarDays },
+  { name: 'Roles', href: '/roles', icon: Settings },
 ];
 
 export default function Sidebar() {

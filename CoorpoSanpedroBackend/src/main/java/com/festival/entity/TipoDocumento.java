@@ -1,5 +1,9 @@
 package com.festival.entity;
 
 public enum TipoDocumento {
-    CONTRATO, FACTURA, COTIZACION, ACTA, OTRO
+    CEDULA_CIUDADANIA,
+    CEDULA_EXTRANJERIA,
+    PASAPORTE,
+    TARJETA_IDENTIDAD,
+    NIT
 }

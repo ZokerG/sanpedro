@@ -33,6 +33,6 @@ public class AuthServiceImpl implements AuthUseCase {
 
         String jwtToken = jwtService.generateToken(usuario);
 
-        return new AuthResponseDTO(jwtToken, usuario.getEmail(), usuario.getRol().name());
+        return new AuthResponseDTO(jwtToken, usuario.getEmail(), usuario.getRol().getNombre());
     }
 }

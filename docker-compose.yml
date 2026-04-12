@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  minio:
+    image: minio/minio:latest
+    container_name: corposanpedro_minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      # Credenciales maestras (Access Key y Secret Key)
+      MINIO_ROOT_USER: corpoadmin
+      MINIO_ROOT_PASSWORD: corpopassword
+    # Montamos un volumen local para persistir los archivos y evitar que se pierdan
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    restart: unless-stopped
+
+volumes:
+  minio_data:
+    name: minio_data
