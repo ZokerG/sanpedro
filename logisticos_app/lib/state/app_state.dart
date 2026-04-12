@@ -5,6 +5,7 @@ import '../services/auth_service.dart';
 import '../services/personal_service.dart';
 import '../services/evento_service.dart';
 import '../services/solicitud_service.dart';
+import '../services/cartera_service.dart';
 
 /// Comparte servicios y estado de sesión en todo el árbol de widgets.
 class AppState extends InheritedNotifier<AppStateController> {
@@ -29,6 +30,7 @@ class AppStateController extends ChangeNotifier {
   late final PersonalService personalService;
   late final EventoService eventoService;
   late final SolicitudService solicitudService;
+  late final CarteraService carteraService;
 
   Logistico? _logistico;
   Logistico? get logistico => _logistico;
@@ -38,10 +40,17 @@ class AppStateController extends ChangeNotifier {
     personalService = PersonalService(_api);
     eventoService = EventoService(_api);
     solicitudService = SolicitudService(_api);
+    carteraService = CarteraService(_api);
   }
 
   void setLogistico(Logistico logistico) {
     _logistico = logistico;
+    notifyListeners();
+  }
+
+  void updateFotoPerfil(String fotoPerfil) {
+    if (_logistico == null) return;
+    _logistico = _logistico!.copyWith(fotoPerfil: fotoPerfil);
     notifyListeners();
   }
 

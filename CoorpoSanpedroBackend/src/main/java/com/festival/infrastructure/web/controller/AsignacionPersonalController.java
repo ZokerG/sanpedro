@@ -54,6 +54,11 @@ public class AsignacionPersonalController {
 
     @PostMapping("/evento/{eventoId}/liquidar")
     public ResponseEntity<LiquidacionEventoDTO> liquidar(@PathVariable Long eventoId) {
+        return ResponseEntity.ok(asignacionUseCase.ejecutarLiquidacion(eventoId));
+    }
+
+    @GetMapping("/evento/{eventoId}/liquidar")
+    public ResponseEntity<LiquidacionEventoDTO> previsualizarLiquidacion(@PathVariable Long eventoId) {
         return ResponseEntity.ok(asignacionUseCase.liquidarEvento(eventoId));
     }
 }

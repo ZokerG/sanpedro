@@ -14,11 +14,9 @@ class PaymentsScreen extends StatefulWidget {
 
 class _PaymentsScreenState extends State<PaymentsScreen> {
   List<Pago> _pagos = [];
+  double _totalPendiente = 0;
   bool _loading = true;
   String? _error;
-
-  double get _total =>
-      _pagos.where((p) => p.estado == EstadoPago.pagado).fold(0, (s, p) => s + p.monto);
 
   @override
   void initState() {
@@ -32,10 +30,14 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
     if (logistico == null) return;
     setState(() { _loading = true; _error = null; });
     try {
-      final pagos = await state.eventoService
-          .getPagosDePersonal(int.parse(logistico.id));
+      final cartera = await state.carteraService
+          .getCarteraPersonal(int.parse(logistico.id));
       if (!mounted) return;
-      setState(() { _pagos = pagos; _loading = false; });
+      setState(() {
+        _pagos = cartera.registros;
+        _totalPendiente = cartera.totalPendiente;
+        _loading = false;
+      });
     } catch (e) {
       if (!mounted) return;
       setState(() { _loading = false; _error = e.toString(); });
@@ -45,7 +47,6 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
   @override
   Widget build(BuildContext context) {
     final pagos = _pagos;
-    final total = _total;
 
     return Scaffold(
       backgroundColor: AppColors.backgroundWarm,
@@ -65,7 +66,7 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
                     child: ListView(
                       padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
                       children: [
-                        _TotalCard(total: total),
+                        _TotalCard(total: _totalPendiente),
                         const SizedBox(height: 28),
                         if (_error != null)
                           Center(
@@ -75,7 +76,7 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
                           )
                         else ...[
                           Text(
-                            'HISTORIAL DE PAGOS',
+                            'MI CARTERA',
                             style: GoogleFonts.montserrat(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
@@ -165,7 +166,7 @@ class _TotalCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'TOTAL ACUMULADO',
+            'PENDIENTE DE COBRO',
             style: GoogleFonts.inter(
               fontSize: 10,
               fontWeight: FontWeight.w600,
@@ -184,7 +185,7 @@ class _TotalCard extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            'Suma de todos los eventos pagados',
+            'Genera tu cuenta de cobro para recibir el pago',
             style: GoogleFonts.inter(
               fontSize: 12,
               color: AppColors.white.withOpacity(0.5),

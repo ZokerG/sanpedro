@@ -12,6 +12,7 @@ import {
   useDeleteEvento,
   useLiquidaciones,
 } from '@/hooks/useEventos';
+import { useLiquidarEvento } from '@/hooks/useAsignacion';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
@@ -192,7 +193,7 @@ function EventPanel({
 
           {/* Actions */}
           <div className="flex items-center gap-3 pt-2">
-            {!liquidacion && evento.estado !== 'LIQUIDADO' && (
+            {evento.estado !== 'LIQUIDADO' ? (
               <button
                 onClick={onLiquidar}
                 disabled={liquidando}
@@ -201,11 +202,10 @@ function EventPanel({
                 <CheckCircle2 className="w-4 h-4" />
                 {liquidando ? 'Liquidando...' : 'Liquidar Evento'}
               </button>
-            )}
-            {liquidacion && (
+            ) : (
               <span className="text-xs text-slate-400 flex items-center gap-1">
                 <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
-                Liquidación disponible
+                Evento liquidado
               </span>
             )}
           </div>
@@ -219,6 +219,7 @@ function EventPanel({
 export default function EventosPage() {
   const { data: eventos = [], isLoading, isError } = useEventos();
   const deleteMutation = useDeleteEvento();
+  const liquidarMutation = useLiquidarEvento();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const eventoIds = eventos.map((e) => e.id);
@@ -226,6 +227,13 @@ export default function EventosPage() {
 
   const liquidacionMap = new Map<number, LiquidacionEvento>();
   liquidaciones.forEach((liq) => liquidacionMap.set(liq.eventoId, liq));
+
+  const handleLiquidar = (eventoId: number) => {
+    if (!confirm('¿Estás seguro de liquidar este evento? Esta acción cambiará su estado a LIQUIDADO.')) {
+      return;
+    }
+    liquidarMutation.mutate(eventoId);
+  };
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -272,10 +280,8 @@ export default function EventosPage() {
               key={ev.id}
               evento={ev}
               liquidacion={liquidacionMap.get(ev.id) || null}
-              onLiquidar={() => {
-                toast.info('Funcionalidad de liquidación — usa el botón en el panel del evento.');
-              }}
-              liquidando={false}
+              onLiquidar={() => handleLiquidar(ev.id)}
+              liquidando={liquidarMutation.isPending}
             />
           ))}
         </div>

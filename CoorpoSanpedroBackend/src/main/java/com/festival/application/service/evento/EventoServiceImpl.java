@@ -3,6 +3,7 @@ package com.festival.application.service.evento;
 import com.festival.application.dto.evento.EventoRequestDTO;
 import com.festival.application.dto.evento.EventoResponseDTO;
 import com.festival.application.usecase.evento.EventoUseCase;
+import com.festival.entity.EstadoEvento;
 import com.festival.entity.Evento;
 import com.festival.infrastructure.persistence.repository.AsignacionPersonalRepository;
 import com.festival.infrastructure.persistence.repository.EventoRepository;
@@ -11,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -45,6 +47,7 @@ public class EventoServiceImpl implements EventoUseCase {
     public EventoResponseDTO obtenerEvento(Long id) {
         Evento evento = eventoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Evento no encontrado con ID: " + id));
+        actualizarEstadoAutomatico(evento);
         return mapToDTO(evento);
     }
 
@@ -52,6 +55,7 @@ public class EventoServiceImpl implements EventoUseCase {
     @Transactional(readOnly = true)
     public List<EventoResponseDTO> obtenerTodos() {
         return eventoRepository.findAll().stream()
+                .peek(this::actualizarEstadoAutomatico)
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
@@ -63,6 +67,34 @@ public class EventoServiceImpl implements EventoUseCase {
             throw new ResourceNotFoundException("Evento no encontrado con ID: " + id);
         }
         eventoRepository.deleteById(id);
+    }
+
+    /**
+     * Actualiza automáticamente el estado del evento según las fechas:
+     * - Si fechaFin pasó → EJECUTADO
+     * - Si fechaInicio pasó y aún no fechaFin → EN_CURSO
+     * Solo actualiza si el estado actual es PLANEADO o EN_PREPARACION.
+     */
+    private void actualizarEstadoAutomatico(Evento evento) {
+        if (evento.getEstado() == EstadoEvento.LIQUIDADO || evento.getEstado() == EstadoEvento.EJECUTADO) {
+            return; // No revertir estados finales
+        }
+
+        LocalDateTime ahora = LocalDateTime.now();
+
+        if (evento.getFechaFin() != null && !ahora.isBefore(evento.getFechaFin())) {
+            // Ya pasó la fecha de fin → EJECUTADO
+            if (evento.getEstado() != EstadoEvento.EJECUTADO) {
+                evento.setEstado(EstadoEvento.EJECUTADO);
+                eventoRepository.save(evento);
+            }
+        } else if (!ahora.isBefore(evento.getFechaInicio())) {
+            // Ya pasó la fecha de inicio pero aún no fin → EN_CURSO
+            if (evento.getEstado() != EstadoEvento.EN_CURSO) {
+                evento.setEstado(EstadoEvento.EN_CURSO);
+                eventoRepository.save(evento);
+            }
+        }
     }
 
     // ─── Mappers ─────────────────────────────────────────────────────────────

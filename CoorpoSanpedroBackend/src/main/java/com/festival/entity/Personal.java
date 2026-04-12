@@ -101,6 +101,13 @@ public class Personal extends BaseEntity {
     private String codigoQr;
 
     /**
+     * Foto de perfil del personal codificada en Base64.
+     * Se actualiza automáticamente al subir el documento FOTO_PERFIL.
+     */
+    @Column(name = "foto_perfil", columnDefinition = "TEXT")
+    private String fotoPerfil;
+
+    /**
      * El estado activo se calcula en base a si tiene todos los documentos mínimos verificados.
      * No se almacena en DB, se computa en el DTO.
      */

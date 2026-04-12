@@ -1,5 +1,6 @@
 package com.festival.infrastructure.web.controller;
 
+import com.festival.application.dto.personal.PerfilResponseDTO;
 import com.festival.application.dto.personal.PersonalRequestDTO;
 import com.festival.application.dto.personal.PersonalResponseDTO;
 import com.festival.application.usecase.personal.PersonalUseCase;
@@ -31,6 +32,11 @@ public class PersonalController {
     @GetMapping("/{id}")
     public ResponseEntity<PersonalResponseDTO> obtenerPorId(@PathVariable Long id) {
         return ResponseEntity.ok(personalUseCase.obtenerPersonal(id));
+    }
+
+    @GetMapping("/{id}/perfil")
+    public ResponseEntity<PerfilResponseDTO> obtenerPerfil(@PathVariable Long id) {
+        return ResponseEntity.ok(personalUseCase.obtenerPerfil(id));
     }
 
     @PostMapping

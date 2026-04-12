@@ -1,5 +1,6 @@
 import 'api_client.dart';
 import '../models/logistico.dart';
+import '../models/perfil_logistico.dart';
 
 class PersonalService {
   final ApiClient _api;
@@ -18,6 +19,11 @@ class PersonalService {
   Future<Logistico> getById(int id) async {
     final data = await _api.get('/personal/$id') as Map<String, dynamic>;
     return _fromJson(data);
+  }
+
+  Future<PerfilLogistico> getPerfil(int id) async {
+    final data = await _api.get('/personal/$id/perfil') as Map<String, dynamic>;
+    return PerfilLogistico.fromJson(data);
   }
 
   static Logistico _fromJson(Map<String, dynamic> j) {

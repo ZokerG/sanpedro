@@ -20,7 +20,10 @@ class CorpoSanpedroLogo extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _HatIcon(color: accentColor, size: 48 * scale),
+        Image.asset(
+          'assets/images/logo_corposanpedro.png',
+          height: 72 * scale,
+        ),
         const SizedBox(height: 8),
         Text(
           'CorpoSanpedro',
@@ -58,8 +61,11 @@ class CorpoSanpedroLogoSmall extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _HatIcon(color: accentColor, size: 22),
-        const SizedBox(width: 6),
+        Image.asset(
+          'assets/images/logo_corposanpedro.png',
+          height: 28,
+        ),
+        const SizedBox(width: 8),
         Text(
           'CorpoSanpedro',
           style: GoogleFonts.montserrat(

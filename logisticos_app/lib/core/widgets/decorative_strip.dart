@@ -89,130 +89,51 @@ class HorseRiderDecoration extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
-      size: const Size(200, 150),
-      painter: _HorseRiderPainter(),
+      size: const Size(180, 180),
+      painter: _BigSombreroPainter(),
     );
   }
 }
 
-class _HorseRiderPainter extends CustomPainter {
+class _BigSombreroPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = AppColors.primary.withOpacity(0.08)
+      ..color = AppColors.primary.withOpacity(0.10)
       ..style = PaintingStyle.fill;
 
     final w = size.width;
     final h = size.height;
 
-    // Cuerpo del caballo (simplificado)
-    final bodyPath = Path();
-    bodyPath.addOval(Rect.fromCenter(
-      center: Offset(w * 0.5, h * 0.65),
-      width: w * 0.65,
-      height: h * 0.35,
-    ));
-    canvas.drawPath(bodyPath, paint);
+    // Ala del sombrero (brim) — grande y pronunciada
+    final brimPath = Path();
+    brimPath.moveTo(0, h * 0.72);
+    brimPath.cubicTo(w * 0.08, h * 0.58, w * 0.28, h * 0.52, w * 0.5, h * 0.52);
+    brimPath.cubicTo(w * 0.72, h * 0.52, w * 0.92, h * 0.58, w, h * 0.72);
+    brimPath.cubicTo(w * 0.9, h * 0.86, w * 0.7, h * 0.94, w * 0.5, h * 0.94);
+    brimPath.cubicTo(w * 0.3, h * 0.94, w * 0.1, h * 0.86, 0, h * 0.72);
+    canvas.drawPath(brimPath, paint);
 
-    // Cuello
-    final neckPath = Path();
-    neckPath.moveTo(w * 0.55, h * 0.5);
-    neckPath.quadraticBezierTo(w * 0.62, h * 0.28, w * 0.68, h * 0.25);
-    neckPath.lineTo(w * 0.72, h * 0.32);
-    neckPath.quadraticBezierTo(w * 0.66, h * 0.42, w * 0.62, h * 0.55);
-    neckPath.close();
-    canvas.drawPath(neckPath, paint);
+    // Copa del sombrero (crown)
+    final crownPath = Path();
+    crownPath.moveTo(w * 0.24, h * 0.54);
+    crownPath.cubicTo(w * 0.22, h * 0.30, w * 0.28, h * 0.04, w * 0.5, h * 0.02);
+    crownPath.cubicTo(w * 0.72, h * 0.04, w * 0.78, h * 0.30, w * 0.76, h * 0.54);
+    crownPath.close();
+    canvas.drawPath(crownPath, paint);
 
-    // Cabeza del caballo
-    canvas.drawOval(
-      Rect.fromCenter(
-        center: Offset(w * 0.72, h * 0.22),
-        width: w * 0.15,
-        height: h * 0.14,
-      ),
-      paint,
-    );
-
-    // Patas
-    final legPaint = Paint()
-      ..color = AppColors.primary.withOpacity(0.08)
-      ..strokeWidth = w * 0.04
+    // Cinta del sombrero (hatband)
+    final bandPaint = Paint()
+      ..color = AppColors.primary.withOpacity(0.07)
       ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-
-    // Pata delantera
+      ..strokeWidth = h * 0.06;
     canvas.drawLine(
-      Offset(w * 0.58, h * 0.78),
-      Offset(w * 0.53, h * 0.98),
-      legPaint,
-    );
-    // Pata trasera
-    canvas.drawLine(
-      Offset(w * 0.38, h * 0.78),
-      Offset(w * 0.33, h * 0.98),
-      legPaint,
-    );
-    // Pata delantera levantada
-    canvas.drawLine(
-      Offset(w * 0.64, h * 0.76),
-      Offset(w * 0.7, h * 0.94),
-      legPaint,
-    );
-    // Pata trasera levantada
-    canvas.drawLine(
-      Offset(w * 0.44, h * 0.78),
-      Offset(w * 0.5, h * 0.96),
-      legPaint,
-    );
-
-    // Cola
-    final tailPath = Path();
-    tailPath.moveTo(w * 0.2, h * 0.58);
-    tailPath.cubicTo(
-      w * 0.08, h * 0.45,
-      w * 0.04, h * 0.62,
-      w * 0.06, h * 0.78,
-    );
-    canvas.drawPath(
-      tailPath,
-      Paint()
-        ..color = AppColors.primary.withOpacity(0.08)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = w * 0.06
-        ..strokeCap = StrokeCap.round,
-    );
-
-    // Jinete (silueta simplificada)
-    // Torso
-    canvas.drawOval(
-      Rect.fromCenter(
-        center: Offset(w * 0.52, h * 0.38),
-        width: w * 0.16,
-        height: h * 0.22,
-      ),
-      paint,
-    );
-    // Cabeza jinete
-    canvas.drawCircle(Offset(w * 0.52, h * 0.22), w * 0.065, paint);
-    // Sombrero
-    final hatPaint = Paint()..color = AppColors.primary.withOpacity(0.08);
-    final hatPath = Path();
-    hatPath.addOval(Rect.fromCenter(
-      center: Offset(w * 0.52, h * 0.16),
-      width: w * 0.18,
-      height: h * 0.05,
-    ));
-    canvas.drawPath(hatPath, hatPaint);
-    canvas.drawRect(
-      Rect.fromCenter(
-        center: Offset(w * 0.52, h * 0.12),
-        width: w * 0.11,
-        height: h * 0.07,
-      ),
-      hatPaint,
+      Offset(w * 0.245, h * 0.51),
+      Offset(w * 0.755, h * 0.51),
+      bandPaint,
     );
   }
 
   @override
-  bool shouldRepaint(_HorseRiderPainter old) => false;
+  bool shouldRepaint(_BigSombreroPainter old) => false;
 }

@@ -6,20 +6,22 @@ import com.festival.application.dto.asignacion.LiquidacionEventoDTO;
 import com.festival.application.usecase.asignacion.AsignacionPersonalUseCase;
 import com.festival.entity.*;
 import com.festival.infrastructure.persistence.repository.AsignacionPersonalRepository;
+import com.festival.infrastructure.persistence.repository.CarteraLogisticoRepository;
 import com.festival.infrastructure.persistence.repository.DocumentoPersonalRepository;
 import com.festival.infrastructure.persistence.repository.EventoRepository;
 import com.festival.infrastructure.persistence.repository.PersonalRepository;
 import com.festival.infrastructure.web.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AsignacionPersonalServiceImpl implements AsignacionPersonalUseCase {
@@ -28,6 +30,7 @@ public class AsignacionPersonalServiceImpl implements AsignacionPersonalUseCase 
     private final PersonalRepository personalRepository;
     private final EventoRepository eventoRepository;
     private final DocumentoPersonalRepository documentoPersonalRepository;
+    private final CarteraLogisticoRepository carteraRepository;
 
     /** Documentos mínimos requeridos para que un personal pueda trabajar. */
     private static final List<TipoDocumentoRequerido> DOCUMENTOS_MINIMOS = List.of(
@@ -134,8 +137,60 @@ public class AsignacionPersonalServiceImpl implements AsignacionPersonalUseCase 
         Evento evento = eventoRepository.findById(eventoId)
                 .orElseThrow(() -> new ResourceNotFoundException("Evento no encontrado con ID: " + eventoId));
 
-        long totalAsignados = asignacionRepository.countActivasByEventoId(eventoId);
-        long totalAsistentes = asignacionRepository.countAsistentesConfirmadosByEventoId(eventoId);
+        return calcularLiquidacion(evento);
+    }
+
+    @Override
+    @Transactional
+    public LiquidacionEventoDTO ejecutarLiquidacion(Long eventoId) {
+        Evento evento = eventoRepository.findById(eventoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Evento no encontrado con ID: " + eventoId));
+
+        // Cambiar estado a LIQUIDADO
+        evento.setEstado(EstadoEvento.LIQUIDADO);
+        eventoRepository.save(evento);
+
+        // Generar registros de cartera para cada logístico que asistió
+        crearRegistrosCartera(evento);
+
+        return calcularLiquidacion(evento);
+    }
+
+    /**
+     * Por cada asignación con asistio = true, crea un registro en cartera_logistico
+     * si aún no existe (idempotente: una reliquidación no duplica registros).
+     */
+    private void crearRegistrosCartera(Evento evento) {
+        BigDecimal cuota = evento.getCuotaPago() != null ? evento.getCuotaPago() : BigDecimal.ZERO;
+        if (cuota.compareTo(BigDecimal.ZERO) == 0) return;
+
+        List<AsignacionPersonal> asistentes = asignacionRepository.findByEventoId(evento.getId())
+                .stream()
+                .filter(AsignacionPersonal::isAsistio)
+                .toList();
+
+        LocalDateTime ahora = LocalDateTime.now();
+        int creados = 0;
+        for (AsignacionPersonal asignacion : asistentes) {
+            Long personalId = asignacion.getPersonal().getId();
+            if (!carteraRepository.existsByPersonalIdAndEventoId(personalId, evento.getId())) {
+                CarteraLogistico cartera = new CarteraLogistico();
+                cartera.setPersonal(asignacion.getPersonal());
+                cartera.setEvento(evento);
+                cartera.setMonto(cuota);
+                cartera.setFechaLiquidacion(ahora);
+                cartera.setEstado(EstadoCartera.PENDIENTE_COBRO);
+                carteraRepository.save(cartera);
+                creados++;
+            }
+        }
+        log.info("Liquidación evento {}: {} registros de cartera creados.", evento.getId(), creados);
+    }
+
+    /** Calcula los datos de liquidación sin modificar estado */
+    private LiquidacionEventoDTO calcularLiquidacion(Evento evento) {
+        long totalAsignados = asignacionRepository.countActivasByEventoId(evento.getId());
+        long totalAsistentes = asignacionRepository.countAsistentesConfirmadosByEventoId(evento.getId());
 
         BigDecimal cuota = evento.getCuotaPago() != null ? evento.getCuotaPago() : BigDecimal.ZERO;
         BigDecimal costoReal = cuota.multiply(BigDecimal.valueOf(totalAsistentes));
@@ -143,7 +198,7 @@ public class AsignacionPersonalServiceImpl implements AsignacionPersonalUseCase 
         BigDecimal diferencia = presupuesto.subtract(costoReal);
 
         LiquidacionEventoDTO liquidacion = new LiquidacionEventoDTO();
-        liquidacion.setEventoId(eventoId);
+        liquidacion.setEventoId(evento.getId());
         liquidacion.setNombreEvento(evento.getNombre());
         liquidacion.setTotalAsignados((int) totalAsignados);
         liquidacion.setTotalAsistentes((int) totalAsistentes);

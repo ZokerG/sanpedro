@@ -13,5 +13,8 @@ public interface AsignacionPersonalUseCase {
     void confirmarAsistencia(Long asignacionId);
     void desactivarAsignacion(Long id);
     void eliminarAsignacion(Long id);
+    /** Previsualiza liquidación (solo cálculo, no persiste cambios) */
     LiquidacionEventoDTO liquidarEvento(Long eventoId);
+    /** Ejecuta liquidación: cambia estado del evento a LIQUIDADO */
+    LiquidacionEventoDTO ejecutarLiquidacion(Long eventoId);
 }

@@ -1,6 +1,6 @@
 # CorpoSanpedro — Estado del Proyecto
 
-> Última actualización: 2026-04-10
+> Última actualización: 2026-04-11
 
 ---
 
@@ -155,11 +155,72 @@ Se eliminaron todas las entidades, servicios, controladores y DTOs del modelo an
 - `[x]` **Botón de Editar** en tablas de Logística, Prensa y Administrativo con modal completo de edición (3 pestañas)
 - `[x]` **Frontend:** modelos, servicios, hooks y UI actualizados para los nuevos campos
 
-### Eventos — Simplificación
+### Eventos — Simplificación y Mejoras
 
 - `[x]` **Eliminada relación con Festival:** Eventos ya no están atados a un festival
 - `[x]` **Duración en horas:** El frontend envía `duracionHoras` (entero), el backend calcula `fechaFin = fechaInicio + horas`
 - `[x]` **Formulario simplificado:** Sin selector de festival, duración en horas en lugar de fecha fin
 - `[x]` **Panel de Evento:** cards expandibles con barra `X/Y asignados`, presupuesto y balance de liquidación
 - `[x]` **Dashboard renovado:** métricas relevantes (personal total, docs pendientes, eventos, presupuesto), distribución por tipo, eventos recientes
+- `[x]` **Liquidación funcional:**
+  - Botón "Liquidar Evento" ejecuta POST que cambia estado a `LIQUIDADO`
+  - GET preview para ver datos antes de liquidar
+- `[x]` **Cambio automático de estado por fechas:**
+  - Al consultar eventos, si `fechaFin` pasó → estado cambia a `EJECUTADO`
+  - Si `fechaInicio` pasó pero no `fechaFin` → estado cambia a `EN_CURSO`
+  - Nunca revierte estados finales (`LIQUIDADO`, `EJECUTADO`)
+
+### Control de Asistencia por QR + Cartera del Logístico
+
+> **Concepto:** El ingreso físico al evento se registra escaneando el QR del logístico con una segunda app (escáner). Al escanear → `asistio = true` en la asignación. Al liquidar el evento → se crea automáticamente un registro `CarteraLogistico` por cada asistente, representando el derecho a cobrar su `cuotaPago`.
+
+#### Backend — Control de Asistencia
+
+- `[x]` **Entidad `RegistroAsistencia`:** registra cada escaneo (INGRESO / SALIDA), FK a `AsignacionPersonal`, timestamp, registradoPor
+- `[x]` **Enum `TipoRegistroAsistencia`:** `INGRESO`, `SALIDA`
+- `[x]` **`RegistroAsistenciaRepository`:** queries por asignacion, por evento, existencia de INGRESO
+- `[x]` **`POST /api/asistencia/escanear`:** valida QR → busca asignación activa → INGRESO (asistio=true) / SALIDA / RECHAZADO
+- `[x]` **`GET /api/asistencia/evento/{id}`:** lista todos los registros en tiempo real (para app escáner)
+- `[x]` **`PersonalRepository.findByCodigoQr`** y **`AsignacionPersonalRepository.findByPersonalIdAndEventoIdAndActivoTrue`** añadidos
+
+#### Backend — Cartera del Logístico
+
+- `[x]` **Entidad `CarteraLogistico`:** `personal_id`, `evento_id`, `monto`, `fecha_liquidacion`, `estado` (`PENDIENTE_COBRO` | `COBRADO`), `nota`; unique constraint (personal × evento)
+- `[x]` **Enum `EstadoCartera`:** `PENDIENTE_COBRO`, `COBRADO`
+- `[x]` **`CarteraLogisticoRepository`:** suma de montos pendientes, filtros por personal/estado
+- `[x]` **Liquidación extendida:** `ejecutarLiquidacion` crea registros `CarteraLogistico` para cada `asistio=true`; idempotente
+- `[x]` **`GET /api/cartera/personal/{id}`:** resumen + detalle de cartera del logístico
+- `[x]` **`GET /api/cartera/pendientes`:** vista admin — todas las carteras pendientes
+
+#### Flutter — Mis Pagos
+
+- `[x]` **`CarteraService`:** llama `GET /api/cartera/personal/{id}`, devuelve `CarteraResumen` (totalPendiente + registros)
+- `[x]` **`PaymentsScreen` actualizada:** usa `carteraService.getCarteraPersonal`, muestra "PENDIENTE DE COBRO" real desde backend, lista de eventos liquidados con estado de cobro
+
+#### Pendiente
+
+- `[ ]` **Generar cuenta de cobro (PDF):**
+  - Seleccionar registros pendientes y cambiarlos a `COBRADO`
+  - Backend: `PATCH /api/cartera/cobrar` (body: lista de ids)
+  - Flutter: genera PDF con datos del logístico, bancarios, desglose y total
+- `[ ]` **Vista admin "Carteras pendientes"** en Next.js (frontend web)
+- `[ ]` **App escáner** (segunda app Flutter): pantalla de escaneo QR + panel tiempo real por evento
+
+#### App Escáner (`audit_app`) — ✅ Implementada
+
+**Rol requerido:** `AUDITOR` (validado en `AuthService.verifyOtp`)
+
+**Pantallas:**
+- **Splash** → restaura sesión o va a Login
+- **Login** — mismo flujo OTP que logisticos_app; si el rol no es AUDITOR muestra error claro
+- **Eventos** — lista eventos activos (PLANEADO, EN_PREPARACION, EN_CURSO) con estado coloreado, asignados/límite
+- **ScannerShell** — shell con 2 tabs para el evento seleccionado:
+  - **Escanear QR**: cámara con `mobile_scanner`, overlay animado (INGRESO=verde / SALIDA=naranja / RECHAZADO=rojo) con nombre y número de camiseta, se resetea sola en 3s
+  - **Panel**: stats en tiempo real (ingresos / salidas / total), lista de registros con hora exacta, auto-refresh cada 15s + pull to refresh
+
+**Permisos configurados:**
+- Android: `<uses-permission android:name="android.permission.CAMERA" />`
+- iOS: `NSCameraUsageDescription` en `Info.plist`
+
+**`flutter analyze` → 0 errors · 0 warnings**
 

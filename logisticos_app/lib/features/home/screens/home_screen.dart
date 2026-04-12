@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
@@ -9,6 +10,7 @@ import '../../../state/app_state.dart';
 import '../../auth/screens/login_screen.dart';
 import '../../shell/main_shell.dart';
 import '../../events/screens/event_detail_screen.dart';
+import '../../perfil/screens/perfil_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -45,10 +47,19 @@ class _HomeScreenState extends State<HomeScreen> {
 
     setState(() { _loading = true; _error = null; });
     try {
-      final eventos = await state.eventoService
-          .getEventosDePersonal(int.parse(logistico.id));
+      final id = int.parse(logistico.id);
+      final eventos = await state.eventoService.getEventosDePersonal(id);
       if (!mounted) return;
       setState(() { _eventos = eventos; _loading = false; });
+
+      // Carga foto en segundo plano solo si aún no está en memoria
+      if (logistico.fotoPerfil == null) {
+        final perfil = await state.personalService.getPerfil(id);
+        if (!mounted) return;
+        if (perfil.fotoPerfil != null) {
+          state.updateFotoPerfil(perfil.fotoPerfil!);
+        }
+      }
     } catch (e) {
       if (!mounted) return;
       setState(() { _loading = false; _error = e.toString(); });
@@ -74,7 +85,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: CustomScrollView(
           slivers: [
             SliverToBoxAdapter(
-              child: _Header(nombre: logistico.nombre, fechaActual: _fechaActual),
+              child: _Header(nombre: logistico.nombre, fechaActual: _fechaActual, fotoPerfil: logistico.fotoPerfil),
             ),
             SliverToBoxAdapter(
               child: Padding(
@@ -144,16 +155,13 @@ class _HomeScreenState extends State<HomeScreen> {
 class _Header extends StatelessWidget {
   final String nombre;
   final String fechaActual;
+  final String? fotoPerfil;
 
-  const _Header({required this.nombre, required this.fechaActual});
+  const _Header({required this.nombre, required this.fechaActual, this.fotoPerfil});
 
   void _showProfileSheet(BuildContext context) {
-    final logistico = AppState.of(context).logistico;
-    if (logistico == null) return;
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (_) => _ProfileBottomSheet(logistico: logistico),
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const PerfilScreen()),
     );
   }
 
@@ -196,28 +204,55 @@ class _Header extends StatelessWidget {
           const SizedBox(width: 12),
           GestureDetector(
             onTap: () => _showProfileSheet(context),
-            child: Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: AppColors.white, width: 2),
-                color: AppColors.darkBrown,
-              ),
-              child: Center(
-                child: Text(
-                  nombre.split(' ').map((p) => p[0]).take(2).join(),
-                  style: GoogleFonts.montserrat(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.white,
-                  ),
-                ),
-              ),
-            ),
+            child: _AvatarCircle(nombre: nombre, fotoPerfil: fotoPerfil),
           ),
         ],
       ),
+    );
+  }
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Avatar circular (foto o iniciales)
+// ──────────────────────────────────────────────────────────────────────────────
+
+class _AvatarCircle extends StatelessWidget {
+  final String nombre;
+  final String? fotoPerfil;
+  const _AvatarCircle({required this.nombre, this.fotoPerfil});
+
+  @override
+  Widget build(BuildContext context) {
+    ImageProvider? imageProvider;
+    if (fotoPerfil != null && fotoPerfil!.contains(',')) {
+      try {
+        imageProvider = MemoryImage(base64Decode(fotoPerfil!.split(',').last));
+      } catch (_) {}
+    }
+
+    return Container(
+      width: 44,
+      height: 44,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: AppColors.white, width: 2),
+        color: AppColors.darkBrown,
+        image: imageProvider != null
+            ? DecorationImage(image: imageProvider, fit: BoxFit.cover)
+            : null,
+      ),
+      child: imageProvider == null
+          ? Center(
+              child: Text(
+                nombre.split(' ').map((p) => p[0]).take(2).join(),
+                style: GoogleFonts.montserrat(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.white,
+                ),
+              ),
+            )
+          : null,
     );
   }
 }

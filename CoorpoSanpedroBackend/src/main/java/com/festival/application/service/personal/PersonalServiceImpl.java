@@ -1,5 +1,6 @@
 package com.festival.application.service.personal;
 
+import com.festival.application.dto.personal.PerfilResponseDTO;
 import com.festival.application.dto.personal.PersonalRequestDTO;
 import com.festival.application.dto.personal.PersonalResponseDTO;
 import com.festival.application.usecase.personal.PersonalUseCase;
@@ -50,17 +51,22 @@ public class PersonalServiceImpl implements PersonalUseCase {
         if (dto.getNumeroCamiseta() != null && personalRepository.existsByNumeroCamiseta(dto.getNumeroCamiseta())) {
             throw new IllegalArgumentException("El número de camiseta " + dto.getNumeroCamiseta() + " ya está en uso.");
         }
+        if (dto.getEmail() == null || dto.getEmail().isBlank()) {
+            throw new IllegalArgumentException("El correo de contacto es obligatorio para crear las credenciales de acceso.");
+        }
+        if (usuarioRepository.existsByEmail(dto.getEmail().trim())) {
+            throw new IllegalArgumentException("Ya existe un usuario registrado con el correo: " + dto.getEmail());
+        }
 
         Personal personal = new Personal();
         mapToEntity(dto, personal);
         personal.setCodigoQr(UUID.randomUUID().toString());
 
-        // Crear credenciales automáticamente
-        String email = dto.getNumeroDocumento().trim() + "@corposanpedro.com";
+        // Credenciales: correo de contacto como usuario, documento como contraseña
         Usuario usuario = Usuario.builder()
                 .nombre(dto.getPrimerNombre())
                 .apellido(dto.getPrimerApellido())
-                .email(email)
+                .email(dto.getEmail().trim())
                 .password(passwordEncoder.encode(dto.getNumeroDocumento()))
                 .activo(true)
                 .build();
@@ -88,6 +94,17 @@ public class PersonalServiceImpl implements PersonalUseCase {
         }
 
         mapToEntity(dto, personal);
+
+        // Sincronizar email del usuario si cambió el correo de contacto
+        if (personal.getUsuario() != null && dto.getEmail() != null
+                && !dto.getEmail().isBlank()
+                && !dto.getEmail().trim().equalsIgnoreCase(personal.getUsuario().getEmail())) {
+            if (usuarioRepository.existsByEmail(dto.getEmail().trim())) {
+                throw new IllegalArgumentException("Ya existe un usuario registrado con el correo: " + dto.getEmail());
+            }
+            personal.getUsuario().setEmail(dto.getEmail().trim());
+        }
+
         return mapToDTO(personalRepository.save(personal));
     }
 
@@ -96,6 +113,14 @@ public class PersonalServiceImpl implements PersonalUseCase {
     public PersonalResponseDTO obtenerPersonal(Long id) {
         return mapToDTO(personalRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Personal no encontrado con ID: " + id)));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PerfilResponseDTO obtenerPerfil(Long id) {
+        Personal p = personalRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Personal no encontrado con ID: " + id));
+        return mapToPerfil(p);
     }
 
     @Override
@@ -215,6 +240,29 @@ public class PersonalServiceImpl implements PersonalUseCase {
         dto.setDocumentosCompletos(docsCompletos);
         dto.setActivo(docsCompletos);
 
+        return dto;
+    }
+
+    private PerfilResponseDTO mapToPerfil(Personal p) {
+        PerfilResponseDTO dto = new PerfilResponseDTO();
+        dto.setId(p.getId());
+        dto.setNombreCompleto(p.getNombreCompleto());
+        dto.setTipoDocumento(p.getTipoDocumento());
+        dto.setNumeroDocumento(p.getNumeroDocumento());
+        dto.setEmail(p.getEmail());
+        dto.setTelefono(p.getTelefono());
+        dto.setFechaNacimiento(p.getFechaNacimiento());
+        dto.setDireccion(p.getDireccion());
+        dto.setArl(p.getArl());
+        dto.setTipoPersonal(p.getTipoPersonal());
+        dto.setNumeroCamiseta(p.getNumeroCamiseta());
+        dto.setCodigoQr(p.getCodigoQr());
+        dto.setFotoPerfil(p.getFotoPerfil());
+        if (p.getCargo() != null) dto.setCargoNombre(p.getCargo().getNombre());
+        if (p.getBanco() != null) dto.setBancoNombre(p.getBanco().getNombre());
+        if (p.getTipoCuentaBancaria() != null) dto.setTipoCuentaBancariaNombre(p.getTipoCuentaBancaria().getNombre());
+        dto.setNumeroCuenta(p.getNumeroCuenta());
+        dto.setActivo(todosDocumentosMinimosVerificados(p.getId()));
         return dto;
     }
 

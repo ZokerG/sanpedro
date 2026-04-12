@@ -26,4 +26,6 @@ public interface AsignacionPersonalRepository extends JpaRepository<AsignacionPe
     long countAsistentesConfirmadosByEventoId(@Param("eventoId") Long eventoId);
 
     boolean existsByPersonalIdAndEventoIdAndActivoTrue(Long personalId, Long eventoId);
+
+    java.util.Optional<AsignacionPersonal> findByPersonalIdAndEventoIdAndActivoTrue(Long personalId, Long eventoId);
 }

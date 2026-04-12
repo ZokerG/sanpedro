@@ -16,8 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Base64;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -49,7 +49,8 @@ public class DocumentoPersonalServiceImpl implements DocumentoPersonalService {
                     .findByPersonalIdAndTipoDocumentoRequerido(personalId, tipo)
                     .orElse(new DocumentoPersonal());
 
-            // If replacing, we could theoretically delete the old object from S3 here to save space
+            // If replacing, we could theoretically delete the old object from S3 here to
+            // save space
             if (documento.getRutaArchivo() != null) {
                 try {
                     s3StorageService.deleteFile(documento.getRutaArchivo());
@@ -66,6 +67,16 @@ public class DocumentoPersonalServiceImpl implements DocumentoPersonalService {
             documento.setNotaRevision(null);
 
             documento = documentoPersonalRepository.save(documento);
+
+            // Al subir la foto de perfil, guardar base64 directamente en Personal
+            if (tipo == TipoDocumentoRequerido.FOTO_PERFIL) {
+                String mimeType = file.getContentType() != null ? file.getContentType() : "image/jpeg";
+                String base64 = "data:" + mimeType + ";base64," +
+                        Base64.getEncoder().encodeToString(file.getBytes());
+                personal.setFotoPerfil(base64);
+                personalRepository.save(personal);
+            }
+
             return populatePresignedUrl(documento);
 
         } catch (IOException e) {
