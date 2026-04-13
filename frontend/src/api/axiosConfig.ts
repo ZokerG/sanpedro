@@ -55,6 +55,18 @@ axiosInstance.interceptors.response.use(
     if (activeRequests === 0) {
       nProgress.done();
     }
+
+    // Token expirado o inválido → cerrar sesión y redirigir al login
+    if (
+      error.response?.status === 401 &&
+      !error.config?.url?.includes('/auth/')
+    ) {
+      useAuthStore.getState().logout();
+      if (typeof window !== 'undefined') {
+        window.location.href = '/auth/login';
+      }
+    }
+
     return Promise.reject(error);
   }
 );

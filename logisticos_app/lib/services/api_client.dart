@@ -2,10 +2,13 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiClient {
-  static const String _baseUrl = 'http://localhost:8080/api';
+  static const String _baseUrl = 'http://192.168.1.72:8080/api';
 
   final http.Client _client;
   String? _token;
+
+  /// Se llama cuando el servidor devuelve 401 (token expirado / inválido).
+  void Function()? onUnauthorized;
 
   ApiClient({http.Client? client}) : _client = client ?? http.Client();
 
@@ -48,10 +51,23 @@ class ApiClient {
   }
 
   dynamic _handle(http.Response response) {
-    final body = jsonDecode(utf8.decode(response.bodyBytes));
-    if (response.statusCode >= 200 && response.statusCode < 300) {
-      return body;
+    final rawBody = utf8.decode(response.bodyBytes).trim();
+
+    // 401 → notificar y lanzar excepción antes de intentar parsear
+    if (response.statusCode == 401) {
+      onUnauthorized?.call();
+      throw ApiException(401, 'Sesión expirada. Por favor ingresa de nuevo.');
     }
+
+    // Body vacío en respuesta exitosa
+    if (rawBody.isEmpty) {
+      if (response.statusCode >= 200 && response.statusCode < 300) return null;
+      throw ApiException(response.statusCode, 'Error ${response.statusCode}');
+    }
+
+    final body = jsonDecode(rawBody);
+    if (response.statusCode >= 200 && response.statusCode < 300) return body;
+
     final msg = body is Map ? (body['message'] ?? body['error'] ?? 'Error') : 'Error';
     throw ApiException(response.statusCode, msg.toString());
   }

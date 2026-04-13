@@ -31,6 +31,7 @@ class _LogisticosAppState extends State<LogisticosApp> {
         title: 'CorpoSanpedro Logísticos',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.light,
+        navigatorKey: _controller.navigatorKey,
         home: const SplashScreen(),
       ),
     );

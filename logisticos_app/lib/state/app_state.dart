@@ -6,6 +6,7 @@ import '../services/personal_service.dart';
 import '../services/evento_service.dart';
 import '../services/solicitud_service.dart';
 import '../services/cartera_service.dart';
+import '../features/auth/screens/login_screen.dart';
 
 /// Comparte servicios y estado de sesión en todo el árbol de widgets.
 class AppState extends InheritedNotifier<AppStateController> {
@@ -25,6 +26,7 @@ class AppState extends InheritedNotifier<AppStateController> {
 
 class AppStateController extends ChangeNotifier {
   final ApiClient _api;
+  final GlobalKey<NavigatorState> navigatorKey;
 
   late final AuthService authService;
   late final PersonalService personalService;
@@ -35,12 +37,27 @@ class AppStateController extends ChangeNotifier {
   Logistico? _logistico;
   Logistico? get logistico => _logistico;
 
-  AppStateController() : _api = ApiClient() {
+  AppStateController({GlobalKey<NavigatorState>? navigatorKey})
+      : _api = ApiClient(),
+        navigatorKey = navigatorKey ?? GlobalKey<NavigatorState>() {
     authService = AuthService(_api);
     personalService = PersonalService(_api);
     eventoService = EventoService(_api);
     solicitudService = SolicitudService(_api);
     carteraService = CarteraService(_api);
+
+    // Cuando el token expira, limpiar sesión y volver al login
+    _api.onUnauthorized = _handleSessionExpired;
+  }
+
+  void _handleSessionExpired() {
+    authService.logout();
+    _logistico = null;
+    notifyListeners();
+    navigatorKey.currentState?.pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      (_) => false,
+    );
   }
 
   void setLogistico(Logistico logistico) {
