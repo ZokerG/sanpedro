@@ -6,6 +6,7 @@ import '../services/personal_service.dart';
 import '../services/evento_service.dart';
 import '../services/solicitud_service.dart';
 import '../services/cartera_service.dart';
+import '../services/documento_service.dart';
 import '../features/auth/screens/login_screen.dart';
 
 /// Comparte servicios y estado de sesión en todo el árbol de widgets.
@@ -33,6 +34,7 @@ class AppStateController extends ChangeNotifier {
   late final EventoService eventoService;
   late final SolicitudService solicitudService;
   late final CarteraService carteraService;
+  late final DocumentoService documentoService;
 
   Logistico? _logistico;
   Logistico? get logistico => _logistico;
@@ -45,6 +47,7 @@ class AppStateController extends ChangeNotifier {
     eventoService = EventoService(_api);
     solicitudService = SolicitudService(_api);
     carteraService = CarteraService(_api);
+    documentoService = DocumentoService(_api);
 
     // Cuando el token expira, limpiar sesión y volver al login
     _api.onUnauthorized = _handleSessionExpired;

@@ -1,0 +1,7 @@
+target/
+*.log
+.git/
+.gitignore
+.mvn/wrapper/maven-wrapper.jar
+**/.DS_Store
+compile_output.txt

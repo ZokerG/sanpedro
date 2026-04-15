@@ -38,6 +38,8 @@ dependencies:
   qr_flutter: ^4.1.0
   http: ^1.6.0
   shared_preferences: ^2.5.5
+  file_picker: ^8.1.7
+  crop_your_image: ^2.0.0
 
 dev_dependencies:
   flutter_test:

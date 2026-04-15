@@ -50,6 +50,23 @@ class ApiClient {
     return _handle(response);
   }
 
+  Future<Map<String, dynamic>> postMultipart(
+    String path,
+    Map<String, String> fields,
+    List<http.MultipartFile> files,
+  ) async {
+    final request = http.MultipartRequest('POST', Uri.parse('$_baseUrl$path'));
+    if (_token != null) {
+      request.headers['Authorization'] = 'Bearer $_token';
+    }
+    request.fields.addAll(fields);
+    request.files.addAll(files);
+
+    final streamed = await request.send();
+    final response = await http.Response.fromStream(streamed);
+    return _handle(response) as Map<String, dynamic>;
+  }
+
   dynamic _handle(http.Response response) {
     final rawBody = utf8.decode(response.bodyBytes).trim();
 
