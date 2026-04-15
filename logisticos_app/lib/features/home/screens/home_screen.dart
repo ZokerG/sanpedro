@@ -313,7 +313,7 @@ class _AvatarCircle extends StatelessWidget {
       child: imageProvider == null
           ? Center(
               child: Text(
-                nombre.split(' ').map((p) => p[0]).take(2).join(),
+                nombre.split(' ').where((p) => p.isNotEmpty).map((p) => p[0]).take(2).join(),
                 style: GoogleFonts.montserrat(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
