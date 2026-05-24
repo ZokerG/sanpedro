@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiClient {
-  static const String _baseUrl = 'http://192.168.1.72:8080/api';
+  static const String _baseUrl = 'http://192.168.1.13:8080/api';
 
   final http.Client _client;
   String? _token;
@@ -13,12 +13,13 @@ class ApiClient {
   ApiClient({http.Client? client}) : _client = client ?? http.Client();
 
   void setToken(String token) => _token = token;
+
   void clearToken() => _token = null;
 
   Map<String, String> get _headers => {
-        'Content-Type': 'application/json',
-        if (_token != null) 'Authorization': 'Bearer $_token',
-      };
+    'Content-Type': 'application/json',
+    if (_token != null) 'Authorization': 'Bearer $_token',
+  };
 
   Future<Map<String, dynamic>> post(
     String path,
@@ -68,7 +69,9 @@ class ApiClient {
     final body = jsonDecode(rawBody);
     if (response.statusCode >= 200 && response.statusCode < 300) return body;
 
-    final msg = body is Map ? (body['message'] ?? body['error'] ?? 'Error') : 'Error';
+    final msg = body is Map
+        ? (body['message'] ?? body['error'] ?? 'Error')
+        : 'Error';
     throw ApiException(response.statusCode, msg.toString());
   }
 }

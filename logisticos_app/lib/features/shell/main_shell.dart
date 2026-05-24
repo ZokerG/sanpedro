@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme/app_colors.dart';
 import '../home/screens/home_screen.dart';
+import '../jornada/screens/jornada_screen.dart';
 import '../qr/screens/qr_screen.dart';
 import '../events/screens/events_screen.dart';
 import '../payments/screens/payments_screen.dart';
 import '../solicitudes/screens/solicitudes_screen.dart';
+import '../noticias/screens/noticias_screen.dart';
 
 class MainShell extends StatefulWidget {
   final int initialIndex;
@@ -35,19 +37,18 @@ class MainShellState extends State<MainShell> {
 
   final List<Widget> _screens = const [
     HomeScreen(),
+    JornadaScreen(),
     QrScreen(),
     EventsScreen(),
     PaymentsScreen(),
     SolicitudesScreen(),
+    NoticiasScreen(),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _screens,
-      ),
+      body: IndexedStack(index: _currentIndex, children: _screens),
       bottomNavigationBar: _BottomNavBar(
         currentIndex: _currentIndex,
         onTap: (i) => setState(() => _currentIndex = i),
@@ -78,9 +79,10 @@ class _BottomNavBarState extends State<_BottomNavBar>
       vsync: this,
       duration: const Duration(milliseconds: 1200),
     )..repeat(reverse: true);
-    _pulseAnim = Tween<double>(begin: 1.0, end: 1.10).animate(
-      CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeInOut),
-    );
+    _pulseAnim = Tween<double>(
+      begin: 1.0,
+      end: 1.10,
+    ).animate(CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeInOut));
   }
 
   @override
@@ -92,7 +94,7 @@ class _BottomNavBarState extends State<_BottomNavBar>
   @override
   Widget build(BuildContext context) {
     final bottomPad = MediaQuery.of(context).padding.bottom;
-    final isQrActive = widget.currentIndex == 1;
+    final isQrActive = widget.currentIndex == 2;
 
     return Container(
       decoration: BoxDecoration(
@@ -113,7 +115,7 @@ class _BottomNavBarState extends State<_BottomNavBar>
           child: Stack(
             clipBehavior: Clip.none,
             children: [
-              // 2 ítems izquierda | espacio QR | 2 ítems derecha
+              // 3 ítems izquierda | espacio QR | 2 ítems derecha
               Positioned.fill(
                 child: Row(
                   children: [
@@ -128,22 +130,40 @@ class _BottomNavBarState extends State<_BottomNavBar>
                     ),
                     Expanded(
                       child: _NavItem(
+                        icon: Icons.play_circle_outline,
+                        iconActive: Icons.play_circle_filled,
+                        label: 'Jornada',
+                        isActive: widget.currentIndex == 1,
+                        onTap: () => widget.onTap(1),
+                      ),
+                    ),
+                    Expanded(
+                      child: _NavItem(
                         icon: Icons.calendar_month_outlined,
                         iconActive: Icons.calendar_month,
                         label: 'Mis eventos',
-                        isActive: widget.currentIndex == 2,
-                        onTap: () => widget.onTap(2),
+                        isActive: widget.currentIndex == 3,
+                        onTap: () => widget.onTap(3),
                       ),
                     ),
                     // Espacio central para el botón QR
                     const SizedBox(width: 72),
                     Expanded(
                       child: _NavItem(
+                        icon: Icons.campaign_outlined,
+                        iconActive: Icons.campaign,
+                        label: 'Noticias',
+                        isActive: widget.currentIndex == 6,
+                        onTap: () => widget.onTap(6),
+                      ),
+                    ),
+                    Expanded(
+                      child: _NavItem(
                         icon: Icons.account_balance_wallet_outlined,
                         iconActive: Icons.account_balance_wallet,
                         label: 'Mis pagos',
-                        isActive: widget.currentIndex == 3,
-                        onTap: () => widget.onTap(3),
+                        isActive: widget.currentIndex == 4,
+                        onTap: () => widget.onTap(4),
                       ),
                     ),
                     Expanded(
@@ -151,8 +171,8 @@ class _BottomNavBarState extends State<_BottomNavBar>
                         icon: Icons.assignment_outlined,
                         iconActive: Icons.assignment,
                         label: 'Solicitudes',
-                        isActive: widget.currentIndex == 4,
-                        onTap: () => widget.onTap(4),
+                        isActive: widget.currentIndex == 5,
+                        onTap: () => widget.onTap(5),
                       ),
                     ),
                   ],
@@ -165,7 +185,7 @@ class _BottomNavBarState extends State<_BottomNavBar>
                 right: 0,
                 child: Center(
                   child: GestureDetector(
-                    onTap: () => widget.onTap(1),
+                    onTap: () => widget.onTap(2),
                     child: ScaleTransition(
                       scale: isQrActive
                           ? AlwaysStoppedAnimation(1.0)
@@ -175,13 +195,16 @@ class _BottomNavBarState extends State<_BottomNavBar>
                         height: 64,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: isQrActive ? AppColors.darkBrown : AppColors.primary,
+                          color: isQrActive
+                              ? AppColors.darkBrown
+                              : AppColors.primary,
                           boxShadow: [
                             BoxShadow(
-                              color: (isQrActive
-                                      ? AppColors.darkBrown
-                                      : AppColors.primary)
-                                  .withOpacity(0.45),
+                              color:
+                                  (isQrActive
+                                          ? AppColors.darkBrown
+                                          : AppColors.primary)
+                                      .withOpacity(0.45),
                               blurRadius: 16,
                               offset: const Offset(0, 6),
                             ),

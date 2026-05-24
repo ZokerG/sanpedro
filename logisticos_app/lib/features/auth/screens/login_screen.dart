@@ -15,19 +15,19 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _emailCtrl    = TextEditingController();
-  final _docCtrl      = TextEditingController();
-  final _otpCtrl      = TextEditingController();
+  final _emailCtrl = TextEditingController();
+  final _docCtrl = TextEditingController();
+  final _otpCtrl = TextEditingController();
 
-  bool _loading       = false;
+  bool _loading = false;
   String? _error;
 
   // Paso 1 completado → mostrar pantalla OTP
-  bool _otpSent       = false;
+  bool _otpSent = false;
   String _emailMasked = '';
-  String _emailUsed   = '';
+  String _emailUsed = '';
 
-  bool _obscureDoc    = true;
+  bool _obscureDoc = true;
 
   @override
   void dispose() {
@@ -40,20 +40,27 @@ class _LoginScreenState extends State<LoginScreen> {
   // ── Paso 1: solicitar OTP ────────────────────────────────────────────────
   Future<void> _requestOtp() async {
     final email = _emailCtrl.text.trim();
-    final doc   = _docCtrl.text.trim();
+    final doc = _docCtrl.text.trim();
     if (email.isEmpty || doc.isEmpty) {
-      setState(() => _error = 'Por favor ingresa tu correo y número de documento');
+      setState(
+        () => _error = 'Por favor ingresa tu correo y número de documento',
+      );
       return;
     }
-    setState(() { _loading = true; _error = null; });
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     try {
-      final result = await AppState.of(context).authService.appLogin(email, doc);
+      final result = await AppState.of(
+        context,
+      ).authService.appLogin(email, doc);
       if (!mounted) return;
       setState(() {
-        _loading    = false;
-        _otpSent    = true;
+        _loading = false;
+        _otpSent = true;
         _emailMasked = result.emailMasked;
-        _emailUsed  = email;
+        _emailUsed = email;
       });
     } on ApiException catch (e) {
       if (!mounted) return;
@@ -79,15 +86,19 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() => _error = 'El código debe tener 6 dígitos');
       return;
     }
-    setState(() { _loading = true; _error = null; });
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     try {
-      final state     = AppState.of(context);
+      final state = AppState.of(context);
       final logistico = await state.authService.verifyOtp(_emailUsed, otp);
       state.setLogistico(logistico);
+      state.notificationService.init();
       if (!mounted) return;
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const MainShell()),
-      );
+      Navigator.of(
+        context,
+      ).pushReplacement(MaterialPageRoute(builder: (_) => const MainShell()));
     } on ApiException catch (e) {
       if (!mounted) return;
       setState(() {
@@ -199,8 +210,11 @@ class _LoginScreenState extends State<LoginScreen> {
               color: AppColors.primary.withOpacity(0.08),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.mark_email_read_outlined,
-                color: AppColors.primary, size: 40),
+            child: const Icon(
+              Icons.mark_email_read_outlined,
+              color: AppColors.primary,
+              size: 40,
+            ),
           ),
         ),
         const SizedBox(height: 20),
@@ -278,7 +292,10 @@ class _LoginScreenState extends State<LoginScreen> {
             Expanded(
               child: Text(
                 _error!,
-                style: GoogleFonts.inter(fontSize: 13, color: AppColors.primary),
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  color: AppColors.primary,
+                ),
               ),
             ),
           ],
@@ -314,11 +331,17 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: GoogleFonts.inter(color: AppColors.grayBrown, fontSize: 15),
+          hintStyle: GoogleFonts.inter(
+            color: AppColors.grayBrown,
+            fontSize: 15,
+          ),
           prefixIcon: Icon(icon, color: AppColors.grayBrown, size: 20),
           border: InputBorder.none,
           counterText: '',
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 18,
+          ),
         ),
       ),
     );
@@ -337,18 +360,30 @@ class _LoginScreenState extends State<LoginScreen> {
         style: GoogleFonts.inter(fontSize: 15, color: AppColors.darkBrown),
         decoration: InputDecoration(
           hintText: 'Número de documento',
-          hintStyle: GoogleFonts.inter(color: AppColors.grayBrown, fontSize: 15),
-          prefixIcon: const Icon(Icons.badge_outlined, color: AppColors.grayBrown, size: 20),
+          hintStyle: GoogleFonts.inter(
+            color: AppColors.grayBrown,
+            fontSize: 15,
+          ),
+          prefixIcon: const Icon(
+            Icons.badge_outlined,
+            color: AppColors.grayBrown,
+            size: 20,
+          ),
           suffixIcon: GestureDetector(
             onTap: () => setState(() => _obscureDoc = !_obscureDoc),
             child: Icon(
-              _obscureDoc ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+              _obscureDoc
+                  ? Icons.visibility_outlined
+                  : Icons.visibility_off_outlined,
               color: AppColors.grayBrown,
               size: 20,
             ),
           ),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 18,
+          ),
         ),
       ),
     );
@@ -361,7 +396,9 @@ class _LoginScreenState extends State<LoginScreen> {
         duration: const Duration(milliseconds: 150),
         height: 54,
         decoration: BoxDecoration(
-          color: _loading ? AppColors.primary.withOpacity(0.75) : AppColors.primary,
+          color: _loading
+              ? AppColors.primary.withOpacity(0.75)
+              : AppColors.primary,
           borderRadius: BorderRadius.circular(14),
           boxShadow: [
             BoxShadow(

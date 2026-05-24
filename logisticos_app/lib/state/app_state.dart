@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import '../models/logistico.dart';
+import '../models/logistico.dart';
+import '../models/logistico.dart';
 import '../services/api_client.dart';
 import '../services/auth_service.dart';
 import '../services/personal_service.dart';
 import '../services/evento_service.dart';
 import '../services/solicitud_service.dart';
 import '../services/cartera_service.dart';
+import '../services/jornada_service.dart';
+import '../services/noticia_service.dart';
+import '../services/notification_service.dart';
 import '../features/auth/screens/login_screen.dart';
 
 /// Comparte servicios y estado de sesión en todo el árbol de widgets.
@@ -17,8 +22,7 @@ class AppState extends InheritedNotifier<AppStateController> {
   }) : super(notifier: controller);
 
   static AppStateController of(BuildContext context) {
-    final state =
-        context.dependOnInheritedWidgetOfExactType<AppState>();
+    final state = context.dependOnInheritedWidgetOfExactType<AppState>();
     assert(state != null, 'AppState not found in widget tree');
     return state!.notifier!;
   }
@@ -33,18 +37,29 @@ class AppStateController extends ChangeNotifier {
   late final EventoService eventoService;
   late final SolicitudService solicitudService;
   late final CarteraService carteraService;
+  late final JornadaService jornadaService;
+  late final NoticiaService noticiaService;
+  late final NotificationService notificationService;
 
   Logistico? _logistico;
   Logistico? get logistico => _logistico;
 
   AppStateController({GlobalKey<NavigatorState>? navigatorKey})
-      : _api = ApiClient(),
-        navigatorKey = navigatorKey ?? GlobalKey<NavigatorState>() {
+    : _api = ApiClient(),
+      navigatorKey = navigatorKey ?? GlobalKey<NavigatorState>() {
     authService = AuthService(_api);
     personalService = PersonalService(_api);
     eventoService = EventoService(_api);
     solicitudService = SolicitudService(_api);
     carteraService = CarteraService(_api);
+    jornadaService = JornadaService(_api);
+    noticiaService = NoticiaService(_api);
+
+    notificationService = NotificationService(
+      onTokenReceived: (token, plataforma) {
+        _registerFcmToken(token, plataforma);
+      },
+    );
 
     // Cuando el token expira, limpiar sesión y volver al login
     _api.onUnauthorized = _handleSessionExpired;
@@ -74,5 +89,19 @@ class AppStateController extends ChangeNotifier {
   void clearSession() {
     _logistico = null;
     notifyListeners();
+  }
+
+  void _registerFcmToken(String fcmToken, String plataforma) async {
+    if (_logistico == null) return;
+    try {
+      await _api.post('/device-tokens', {
+        'usuarioId': _logistico!.id,
+        'fcmToken': fcmToken,
+        'plataforma': plataforma,
+      });
+      debugPrint('FCM token registered successfully');
+    } catch (e) {
+      debugPrint('FCM token registration error: $e');
+    }
   }
 }

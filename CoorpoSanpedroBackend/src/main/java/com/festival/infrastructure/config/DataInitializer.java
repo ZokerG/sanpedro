@@ -46,6 +46,7 @@ public class DataInitializer implements CommandLineRunner {
         insertarRolSiNoExiste("EJECUTOR");
         insertarRolSiNoExiste("AUDITOR");
         insertarRolSiNoExiste("ASISTENTE");
+        insertarRolSiNoExiste("LIDER_CAMPO");
 
         // ─── Roles de acceso al sistema (para Usuarios) ────────
         insertarRolSiNoExiste("SUPER_ADMIN");

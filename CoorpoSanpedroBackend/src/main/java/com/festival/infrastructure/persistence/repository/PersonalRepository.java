@@ -18,4 +18,5 @@ public interface PersonalRepository extends JpaRepository<Personal, Long> {
     boolean existsByNumeroCamiseta(Integer numeroCamiseta);
     Optional<Personal> findByEmail(String email);
     Optional<Personal> findByCodigoQr(String codigoQr);
+    Optional<Personal> findByUsuarioId(Long usuarioId);
 }

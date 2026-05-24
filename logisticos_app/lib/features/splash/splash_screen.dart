@@ -28,23 +28,28 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _init() async {
-    final state = AppState.of(context);
+    try {
+      final state = AppState.of(context);
 
-    // Esperar 3 segundos mínimo mientras se intenta restaurar sesión
-    final results = await Future.wait<dynamic>([
-      Future.delayed(const Duration(seconds: 3)),
-      state.authService.restoreSession(),
-    ]);
+      // Esperar 3 segundos mínimo mientras se intenta restaurar sesión
+      final results = await Future.wait<dynamic>([
+        Future.delayed(const Duration(seconds: 3)),
+        state.authService.restoreSession(),
+      ]);
 
-    if (!mounted) return;
-
-    final logistico = results[1];
-
-    if (logistico != null) {
       if (!mounted) return;
-      state.setLogistico(logistico);
-      _goTo(const MainShell());
-      return;
+
+      final logistico = results[1];
+
+      if (logistico != null) {
+        if (!mounted) return;
+        state.setLogistico(logistico);
+        state.notificationService.init();
+        _goTo(const MainShell());
+        return;
+      }
+    } catch (_) {
+      // En caso de cualquier error, ir al login
     }
 
     if (!mounted) return;
