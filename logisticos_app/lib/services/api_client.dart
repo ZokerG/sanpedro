@@ -2,11 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiClient {
-<<<<<<< HEAD
   static const String _baseUrl = 'http://192.168.1.13:8080/api';
-=======
-  static const String _baseUrl = 'https://sanpedro-production.up.railway.app/api';
->>>>>>> 24326761a180bc1b71d6993af83ca38435037dae
 
   final http.Client _client;
   String? _token;

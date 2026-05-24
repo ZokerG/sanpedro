@@ -38,15 +38,10 @@ dependencies:
   qr_flutter: ^4.1.0
   http: ^1.6.0
   shared_preferences: ^2.5.5
-<<<<<<< HEAD
   geolocator: ^13.0.2
   permission_handler: ^11.3.1
   firebase_core: ^3.8.0
   firebase_messaging: ^15.1.5
-=======
-  file_picker: ^8.1.7
-  crop_your_image: ^2.0.0
->>>>>>> 24326761a180bc1b71d6993af83ca38435037dae
 
 dev_dependencies:
   flutter_test:
