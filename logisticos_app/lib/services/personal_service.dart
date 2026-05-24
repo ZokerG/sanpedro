@@ -34,6 +34,7 @@ class PersonalService {
       documento: j['numeroDocumento'] as String? ?? '',
       cargo: j['cargoNombre'] as String? ?? 'Personal logístico',
       codigoQr: j['codigoQr'] as String?,
+      tipoPersonal: j['tipoPersonal'] as String?,
     );
   }
 }

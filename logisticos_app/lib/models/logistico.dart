@@ -6,6 +6,7 @@ class Logistico {
   final String? avatarUrl;
   final String? codigoQr;
   final String? fotoPerfil;
+  final String? tipoPersonal;
 
   const Logistico({
     required this.id,
@@ -15,9 +16,10 @@ class Logistico {
     this.avatarUrl,
     this.codigoQr,
     this.fotoPerfil,
+    this.tipoPersonal,
   });
 
-  Logistico copyWith({String? fotoPerfil}) {
+  Logistico copyWith({String? fotoPerfil, String? tipoPersonal}) {
     return Logistico(
       id: id,
       nombre: nombre,
@@ -26,6 +28,7 @@ class Logistico {
       avatarUrl: avatarUrl,
       codigoQr: codigoQr,
       fotoPerfil: fotoPerfil ?? this.fotoPerfil,
+      tipoPersonal: tipoPersonal ?? this.tipoPersonal,
     );
   }
 }

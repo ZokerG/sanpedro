@@ -1,1 +1,107 @@
+# =============================================
+# Sistema operativo
+# =============================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+desktop.ini
+
+# =============================================
+# Secretos y entorno
+# =============================================
 .env
+.env.local
+.env.*.local
+*.pem
+*.key
+secrets/
+
+# =============================================
+# Imágenes sueltas en la raíz
+# =============================================
+*.png
+*.jpg
+*.jpeg
+!frontend/public/**
+!logisticos_app/assets/**
+!audit_app/assets/**
+
+# =============================================
+# Node / npm (raíz y frontend)
+# =============================================
+node_modules/
+package-lock.json
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# =============================================
+# Next.js (frontend/)
+# =============================================
+frontend/.next/
+frontend/out/
+frontend/node_modules/
+frontend/.env*.local
+frontend/tsconfig.tsbuildinfo
+
+# =============================================
+# Spring Boot / Maven (CoorpoSanpedroBackend/)
+# =============================================
+CoorpoSanpedroBackend/target/
+CoorpoSanpedroBackend/.mvn/wrapper/maven-wrapper.jar
+CoorpoSanpedroBackend/compile_output.txt
+CoorpoSanpedroBackend/.env
+
+# =============================================
+# Flutter — logisticos_app y audit_app
+# =============================================
+**/build/
+**/.dart_tool/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/.packages
+**/pubspec.lock
+**/*.g.dart
+**/*.freezed.dart
+
+# iOS
+**/ios/Pods/
+**/ios/Podfile.lock
+**/ios/.symlinks/
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+**/ios/Runner.xcworkspace/xcuserdata/
+**/ios/Runner/GeneratedPluginRegistrant.*
+
+# Android
+**/android/.gradle/
+**/android/local.properties
+**/android/key.properties
+**/android/app/debug/
+**/android/app/profile/
+**/android/app/release/
+**/android/captures/
+
+# macOS Flutter
+**/macos/Flutter/GeneratedPluginRegistrant.swift
+**/macos/Flutter/ephemeral/
+
+# Linux / Windows Flutter
+**/linux/flutter/generated_plugin_registrant.cc
+**/linux/flutter/generated_plugin_registrant.h
+**/linux/flutter/generated_plugins.cmake
+**/windows/flutter/generated_plugin_registrant.cc
+**/windows/flutter/generated_plugin_registrant.h
+**/windows/flutter/generated_plugins.cmake
+
+# =============================================
+# IDEs
+# =============================================
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo

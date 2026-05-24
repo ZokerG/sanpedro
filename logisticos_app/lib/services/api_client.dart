@@ -2,7 +2,11 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiClient {
+<<<<<<< HEAD
   static const String _baseUrl = 'http://192.168.1.13:8080/api';
+=======
+  static const String _baseUrl = 'https://sanpedro-production.up.railway.app/api';
+>>>>>>> 24326761a180bc1b71d6993af83ca38435037dae
 
   final http.Client _client;
   String? _token;
@@ -49,6 +53,23 @@ class ApiClient {
       headers: _headers,
     );
     return _handle(response);
+  }
+
+  Future<Map<String, dynamic>> postMultipart(
+    String path,
+    Map<String, String> fields,
+    List<http.MultipartFile> files,
+  ) async {
+    final request = http.MultipartRequest('POST', Uri.parse('$_baseUrl$path'));
+    if (_token != null) {
+      request.headers['Authorization'] = 'Bearer $_token';
+    }
+    request.fields.addAll(fields);
+    request.files.addAll(files);
+
+    final streamed = await request.send();
+    final response = await http.Response.fromStream(streamed);
+    return _handle(response) as Map<String, dynamic>;
   }
 
   dynamic _handle(http.Response response) {
